@@ -15,7 +15,7 @@ To create a map just provide the path (`p`), row (`r`), and date (`date`) to
 `view_landsat`:
 ```r
 landsatviewer::view_landsat(
-  p = 26
+  p = 26,
   r = 27,
   date = 20190926
 )
