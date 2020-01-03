@@ -20,3 +20,7 @@ landsatviewer::view_landsat(
   date = 20190926
 )
 ```
+
+A map will open in your web browser or in the plot viewer panel if you are using
+Rstudio. You can toggle each layer on/off to compare the QA band to clouds
+visible in the cirrus band and in the composite false color image.
