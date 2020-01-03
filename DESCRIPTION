@@ -13,11 +13,13 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     dplyr,
+    glue,
     lubridate,
     magrittr,
     mapview,
     purrr,
     raster,
     stringr,
+    viridisLite,
     vroom
 RoxygenNote: 6.1.1

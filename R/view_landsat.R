@@ -20,7 +20,7 @@ view_landsat <- function(p, r, date) {
 
   if (!file.exists(scene_file)) {
     message("downloading list of scenes")
-    download.file(
+    utils::download.file(
       scene_url,
       destfile = scene_file
     )
