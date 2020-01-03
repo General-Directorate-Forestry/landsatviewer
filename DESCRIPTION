@@ -1,0 +1,22 @@
+Package: landsatviewer
+Type: Package
+Title: Preview Landsat Images
+Version: 0.1.0
+Author: Henry Rodman
+Maintainer: Henry Rodman <henry@silviaterra.com>
+Description: Generate interactive preview map of Landsat 8 images.
+    Images are downloaded from AWS S3 public repository (s3://landsat-pds/)
+    and displayed using the `mapview` package.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+Imports:
+    dplyr,
+    lubridate,
+    magrittr,
+    mapview,
+    purrr,
+    raster,
+    stringr,
+    vroom
+RoxygenNote: 6.1.1
