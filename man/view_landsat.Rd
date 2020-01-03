@@ -4,7 +4,7 @@
 \alias{view_landsat}
 \title{Preview Landsat 8 images with `mapview`}
 \usage{
-view_landsat(p, r, date)
+view_landsat(p = NULL, r = NULL, date = NULL, scene = NULL)
 }
 \arguments{
 \item{p}{landsat path (integer)}
@@ -12,11 +12,15 @@ view_landsat(p, r, date)
 \item{r}{landsat row (integer)}
 
 \item{date}{image date formatted as YYYYMMDD}
+
+\item{scene}{dataframe containing one row from `get_scene_table()`. This can
+be used instead of `p`, `r`, and `date`.}
 }
 \value{
 `mapview` interactive map
 }
 \description{
-For a specified scene create a `mapview` interactive map with a false color composite
-image (bands 5, 4, 3), the cirrus band (band 9), and the QA band
+For a specified scene create a `mapview` interactive map with a
+false color composite image (bands 5, 4, 3), the cirrus band (band 9), and
+the QA band
 }

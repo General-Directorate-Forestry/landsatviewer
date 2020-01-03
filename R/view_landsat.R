@@ -1,45 +1,34 @@
 #' @title Preview Landsat 8 images with `mapview`
-#' @description For a specified scene create a `mapview` interactive map with a false color composite
-#' image (bands 5, 4, 3), the cirrus band (band 9), and the QA band
+#' @description For a specified scene create a `mapview` interactive map with a
+#' false color composite image (bands 5, 4, 3), the cirrus band (band 9), and
+#' the QA band
 #'
 #' @param p landsat path (integer)
 #' @param r landsat row (integer)
 #' @param date image date formatted as YYYYMMDD
+#' @param scene dataframe containing one row from `get_scene_table()`. This can
+#' be used instead of `p`, `r`, and `date`.
 #'
 #' @return `mapview` interactive map
 #' @importFrom magrittr %>%
 #' @export
 
-view_landsat <- function(p, r, date) {
-  scene_url <- "https://landsat-pds.s3.amazonaws.com/c1/L8/scene_list.gz"
+view_landsat <- function(p = NULL, r = NULL, date = NULL, scene = NULL) {
 
-  scene_file <- file.path(
-    tempdir(),
-    basename(scene_url)
-  )
+  if (is.null(scene)) {
+    all_scenes <- get_scene_table()
 
-  if (!file.exists(scene_file)) {
-    message("downloading list of scenes")
-    utils::download.file(
-      scene_url,
-      destfile = scene_file
-    )
+    scenes <- all_scenes %>%
+      dplyr::filter(path == p, row == r) %>%
+      dplyr::mutate(acquisitionDate = lubridate::as_date(acquisitionDate))
+
+    # filter down to specified date
+    scene <- scenes %>%
+      dplyr::filter(
+        acquisitionDate == lubridate::ymd(date)
+      )
   }
 
-  all_scenes <- vroom::vroom(
-    scene_file,
-    delim = ","
-  )
-
-  scenes <- all_scenes %>%
-    dplyr::filter(path == p, row == r) %>%
-    dplyr::mutate(acquisitionDate = lubridate::as_date(acquisitionDate))
-
-  # filter down to specified date
-  scene <- scenes %>%
-    dplyr::filter(
-      acquisitionDate == lubridate::ymd(date)
-    )
 
   if (nrow(scene) == 0) {
     stop("no matching scenes found in s3://landsat-pds")
@@ -108,4 +97,33 @@ view_landsat <- function(p, r, date) {
   # combine
   qa + cirrus + composite
 
+}
+
+#' Generate table of Landsat scenes
+#'
+#' @return data.frame containing Landsat scene attributes from
+#' "https://landsat-pds.s3.amazonaws.com/c1/L8/scene_list.gz"
+#' @export
+#'
+
+get_scene_table <- function() {
+  scene_url <- "https://landsat-pds.s3.amazonaws.com/c1/L8/scene_list.gz"
+
+  scene_file <- file.path(
+    tempdir(),
+    basename(scene_url)
+  )
+
+  if (!file.exists(scene_file)) {
+    message("downloading list of scenes")
+    utils::download.file(
+      scene_url,
+      destfile = scene_file
+    )
+  }
+
+  vroom::vroom(
+    scene_file,
+    delim = ","
+  )
 }
