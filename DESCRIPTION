@@ -7,7 +7,8 @@ Maintainer: Henry Rodman <henry@silviaterra.com>
 Description: Generate interactive preview map of Landsat 8 images.
     Images are downloaded from AWS S3 public repository (s3://landsat-pds/)
     and displayed using the `mapview` package.
-License: What license is it under?
+License: MIT + file LICENSE
+URL: https://github.com/SilviaTerra/landsatviewer
 Encoding: UTF-8
 LazyData: true
 Imports:
