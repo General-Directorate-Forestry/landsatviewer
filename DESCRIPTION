@@ -19,6 +19,7 @@ Imports:
     mapview,
     purrr,
     raster,
+    shiny,
     stringr,
     viridisLite,
     vroom
