@@ -3,29 +3,66 @@
 library(ggplot2)
 
 fluidPage(
-  titlePanel("Basic DataTable"),
+  sidebarLayout(
 
-  # Create a new Row in the UI for selectInputs
-  fluidRow(
-    column(4,
-        selectInput("man",
-                    "Manufacturer:",
-                    c("All",
-                      unique(as.character(mpg$manufacturer))))
+    # Sidebar panel for inputs ----
+    sidebarPanel(
+      width = 2,
+      # Input: Numeric entry for landsat path
+      numericInput(
+        inputId = "path",
+        label = "path:",
+        value = NA
+      ),
+
+      # Input: Numeric entry for landsat row
+      numericInput(
+        inputId = "row",
+        label = "row",
+        value = NA
+      ),
+
+      # Input: Date entry for scene year
+      numericInput(
+        inputId = "year",
+        label = "year",
+        value = NA
+      ),
+
+      # Input: Date entry for scene month
+      numericInput(
+        inputId = "month",
+        label = "month",
+        value = NA
+      ),
+
+      # Input: Date entry for scene day
+      numericInput(
+        inputId = "day",
+        label = "day",
+        value = NA
+      ),
+
+      actionButton("update", "Update"),
+
+      actionButton("view_map", "View Map")
     ),
-    column(4,
-        selectInput("trans",
-                    "Transmission:",
-                    c("All",
-                      unique(as.character(mpg$trans))))
-    ),
-    column(4,
-        selectInput("cyl",
-                    "Cylinders:",
-                    c("All",
-                      unique(as.character(mpg$cyl))))
+
+    # Main panel for displaying outputs ----
+    mainPanel(
+
+      tabsetPanel(
+        type = "tabs",
+        tabPanel(
+          "Scene Selection",
+          DT::dataTableOutput("table")
+        ),
+        tabPanel(
+          "Map",
+          leaflet::leafletOutput("scene_map", height = 500)
+        )
+      )
+
     )
-  ),
-  # Create a new row for the table.
-  DT::dataTableOutput("table")
+  )
 )
