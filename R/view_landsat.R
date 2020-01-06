@@ -29,20 +29,20 @@ view_landsat <- function(p = NULL, r = NULL, date = NULL, scene = NULL) {
       )
   }
 
-
   if (nrow(scene) == 0) {
     stop("no matching scenes found in s3://landsat-pds")
   }
 
   # take T1 not RT if available
-  if (nrow(scene) == 2) {
+  if (nrow(scene) > 1) {
     scene <- scene %>%
-      dplyr::filter(stringr::str_detect(string = productId, pattern = "T1"))
+      dplyr::filter(stringr::str_detect(string = productId, pattern = "T1")) %>%
+      dplyr::distinct()
   }
 
   # get urls for the bands that we want
-  bands <- c("5", "4", "3", "9", "QA")
-  urls <- glue::glue("{dirname(scene$download_url)}/{scene$productId}_B{bands}.TIF")
+  imgs <- c("B5.TIF", "B4.TIF", "B3.TIF", "B9.TIF", "BQA.TIF")
+  urls <- glue::glue("{dirname(scene$download_url)}/{scene$productId}_{imgs}")
   tempfiles <- file.path(
     tempdir(),
     basename(urls)
@@ -122,8 +122,14 @@ get_scene_table <- function() {
     )
   }
 
-  vroom::vroom(
-    scene_file,
-    delim = ","
-  )
+  out <-
+    vroom::vroom(
+      scene_file,
+      delim = ","
+    ) %>%
+    dplyr::mutate(
+      acquisitionDate = lubridate::as_date(acquisitionDate)
+    )
+  
+  return(out)
 }
