@@ -34,19 +34,23 @@ function(input, output) {
   )
 
   output$table <- DT::renderDataTable(
-    DT::datatable({
-      scene_tab() %>%
-        dplyr::mutate(
-          thumbnail = glue::glue('<img src="{dirname(download_url)}/{productId}_thumb_small.jpg" height="104"></img')
-        ) %>%
-        dplyr::select(
-          `Scene ID` = productId,
-          date = acquisitionDate,
-          `Cloud Cover %` = cloudCover,
-          thumbnail
-        )
-    }, escape = FALSE),
-
+    DT::datatable(
+      {
+        scene_tab() %>%
+          dplyr::mutate(
+            thumbnail = glue::glue('<img src="{dirname(download_url)}/{productId}_thumb_small.jpg" height="104"></img')
+          ) %>%
+          dplyr::select(
+            `Scene ID` = productId,
+            date = acquisitionDate,
+            `Cloud Cover %` = cloudCover,
+            thumbnail
+          )
+      },
+      escape = FALSE,
+      selection = "single"
+    )
+      
   )
 
   # print the selected scene
