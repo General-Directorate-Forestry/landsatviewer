@@ -1,5 +1,7 @@
+#' @title Run landsatviewer shiny app
+#' @param ... Additional arguments passed to `shiny::runApp`
 #' @export
-run_app <- function() {
+run_app <- function(...) {
   appDir <- system.file("shiny", "landsatviewer", package = "landsatviewer")
   if (appDir == "") {
     stop(
@@ -8,5 +10,5 @@ run_app <- function() {
     )
   }
 
-  shiny::runApp(appDir, display.mode = "normal")
+  shiny::runApp(appDir, display.mode = "normal", ...)
 }
