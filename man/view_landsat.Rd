@@ -4,7 +4,8 @@
 \alias{view_landsat}
 \title{Preview Landsat 8 images with `mapview`}
 \usage{
-view_landsat(p = NULL, r = NULL, date = NULL, scene = NULL)
+view_landsat(p = NULL, r = NULL, date = NULL, scene = NULL,
+  open_rasts = FALSE)
 }
 \arguments{
 \item{p}{landsat path (integer)}

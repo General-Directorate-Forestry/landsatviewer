@@ -13,7 +13,8 @@
 #' @importFrom magrittr %>%
 #' @export
 
-view_landsat <- function(p = NULL, r = NULL, date = NULL, scene = NULL) {
+view_landsat <- function(p = NULL, r = NULL, date = NULL,
+                         scene = NULL, open_rasts = FALSE) {
 
   if (is.null(scene)) {
     all_scenes <- get_scene_table()
@@ -29,20 +30,20 @@ view_landsat <- function(p = NULL, r = NULL, date = NULL, scene = NULL) {
       )
   }
 
-
   if (nrow(scene) == 0) {
     stop("no matching scenes found in s3://landsat-pds")
   }
 
   # take T1 not RT if available
-  if (nrow(scene) == 2) {
+  if (nrow(scene) > 1) {
     scene <- scene %>%
-      dplyr::filter(stringr::str_detect(string = productId, pattern = "T1"))
+      dplyr::filter(stringr::str_detect(string = productId, pattern = "T1")) %>%
+      dplyr::distinct()
   }
 
   # get urls for the bands that we want
-  bands <- c("5", "4", "3", "9", "QA")
-  urls <- glue::glue("{dirname(scene$download_url)}/{scene$productId}_B{bands}.TIF")
+  imgs <- c("B5.TIF", "B4.TIF", "B3.TIF", "B2.TIF", "B9.TIF", "BQA.TIF")
+  urls <- glue::glue("{dirname(scene$download_url)}/{scene$productId}_{imgs}")
   tempfiles <- file.path(
     tempdir(),
     basename(urls)
@@ -57,6 +58,61 @@ view_landsat <- function(p = NULL, r = NULL, date = NULL, scene = NULL) {
       destfile = .y
     )
   )
+
+  if (open_rasts) {
+    # build false color tif
+    false_file <- file.path(
+      tempdir(),
+      glue::glue(
+        "{scene$productId}_false_color.tif"
+      )
+    )
+
+    false_color_tifs <- glue::glue_collapse(
+      tempfiles[imgs %in% c("B5.TIF", "B4.TIF", "B3.TIF")],
+      sep = " "
+    )
+
+    merge_rasts(out_file = false_file, in_files = false_color_tifs)
+
+    # build true color rast
+    true_file <- file.path(
+      tempdir(),
+      glue::glue(
+        "{scene$productId}_true_color.tif"
+      )
+    )
+
+    true_color_tifs <- glue::glue_collapse(
+      tempfiles[imgs %in% c("B4.TIF", "B3.TIF", "B2.TIF")],
+      sep = " "
+    )
+
+    merge_rasts(out_file = true_file, in_files = true_color_tifs)
+
+    # cirrus and QA bands
+    cirrus_band <- tempfiles[imgs == "B9.TIF"]
+    qa_band <- tempfiles[imgs == "BQA.TIF"]
+
+    cirrus_band_resamp <- resample_raster(
+      file = cirrus_band,
+      a_nodata = 0,
+      tr = 60
+    )
+    qa_band_resamp <- resample_raster(
+      file = qa_band,
+      a_nodata = 1,
+      tr = 60
+    )
+
+    system2(
+      "open",
+      c(cirrus_band_resamp, qa_band_resamp, false_file, true_file)
+    )
+
+
+    return("opening rasters in system viewer")
+  }
 
   rast <- raster::stack(tempfiles)
 
@@ -77,19 +133,19 @@ view_landsat <- function(p = NULL, r = NULL, date = NULL, scene = NULL) {
   )
 
   # print QA band
-  raster::NAvalue(rast[[5]]) <- 1
-  raster::values(rast[[5]]) <- factor(
-    as.character(raster::values(rast[[5]]))
+  raster::NAvalue(rast[[6]]) <- 1
+  raster::values(rast[[6]]) <- factor(
+    as.character(raster::values(rast[[6]]))
   )
 
   qa <- mapview::mapview(
-    rast[[5]],
+    rast[[6]],
     layer.name = "QA band"
   )
 
   # print cirrus band
   cirrus <- mapview::mapview(
-    rast[[4]],
+    rast[[5]],
     layer.name = "cirrus band",
     alpha.regions = 1
   )
@@ -99,7 +155,7 @@ view_landsat <- function(p = NULL, r = NULL, date = NULL, scene = NULL) {
 
 }
 
-#' Generate table of Landsat scenes
+#' @title Generate table of Landsat scenes
 #'
 #' @return data.frame containing Landsat scene attributes from
 #' "https://landsat-pds.s3.amazonaws.com/c1/L8/scene_list.gz"
@@ -122,8 +178,55 @@ get_scene_table <- function() {
     )
   }
 
-  vroom::vroom(
-    scene_file,
-    delim = ","
+  out <-
+    vroom::vroom(
+      scene_file,
+      delim = ","
+    ) %>%
+    dplyr::mutate(
+      acquisitionDate = lubridate::as_date(acquisitionDate)
+    )
+
+  return(out)
+}
+
+
+#' @title Build multiband raster from several .tifs
+#'
+#' @param out_file file path to .tif file to be created
+#' @param in_files file paths of .tif files to be added to .vrt
+#'
+#' @return file path to output file
+
+merge_rasts <- function(out_file, in_files) {
+  merge_cmd <- glue::glue(
+    "gdal_merge.py -separate -n 0 -a_nodata 0 -ps 60 60 -co COMPRESS=LZW -o {out_file} {in_files}"
   )
+  system(merge_cmd)
+
+  if (! file.exists(out_file)) {
+    stop("there was an error creating multiband raster")
+  }
+
+  return(out_file)
+}
+
+#' @title Build multiband raster from several .tifs
+#'
+#' @param file file path to .tif file to be resampled
+#' @param a_nodata nodata value for output raster
+#' @param tr target resolution
+#'
+#' @return file path to output .tif file
+
+resample_raster <- function(file, a_nodata, tr) {
+  out_file <- stringr::str_replace(file, ".TIF", "_update.TIF")
+
+  cmd <- glue::glue(
+    "gdal_translate -a_nodata {a_nodata} -tr {tr} {tr} {file} {out_file}"
+  )
+
+  system(cmd)
+
+  return(out_file)
 }
