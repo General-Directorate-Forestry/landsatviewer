@@ -28,6 +28,17 @@ function(input, output) {
       }
 
       out %>%
+        # group_by(path, row, acquisitionDate) %>%
+        # mutate(
+        #   priority = case_when(
+        #     grepl("T1", productId) ~ 1,
+        #     grepl("RT", productId) ~ 2
+        #   )
+        # ) %>%
+        # filter(
+        #   priority == min(priority)
+        # ) %>%
+        # ungroup() %>%
         arrange(desc(acquisitionDate))
     },
     ignoreNULL = FALSE
@@ -48,9 +59,10 @@ function(input, output) {
           )
       },
       escape = FALSE,
-      selection = "single"
+      selection = "single",
+      options = list(pageLength = 4)
     )
-      
+
   )
 
   # print the selected scene
@@ -63,14 +75,27 @@ function(input, output) {
   #   }
   # })
 
-  map_time <- eventReactive(
+  map_time <- observeEvent(
     input$view_map, {
       scene_dat <- scene_tab()
 
       scene_dat[input$table_rows_selected, ]
 
-    },
-    ignoreNULL = TRUE
+    }
+  )
+  
+  # open rasters if that button is clicked
+  observeEvent(
+    input$open_rasters, {
+      scene_dat <- scene_tab()
+
+      scene <- scene_dat[input$table_rows_selected, ]
+
+      landsatviewer::view_landsat(
+        scene = scene,
+        open_rasts = TRUE
+      )
+    }
   )
 
   output$scene_map <- leaflet::renderLeaflet({

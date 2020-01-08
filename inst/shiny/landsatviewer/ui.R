@@ -45,7 +45,9 @@ fluidPage(
 
       actionButton("update", "Update"),
 
-      actionButton("view_map", "View Map")
+      actionButton("view_map", "View Map"),
+
+      actionButton("open_rasters", "Open Rasters")
     ),
 
     # Main panel for displaying outputs ----
