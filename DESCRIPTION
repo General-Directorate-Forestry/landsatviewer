@@ -2,8 +2,10 @@ Package: landsatviewer
 Type: Package
 Title: Preview Landsat Images
 Version: 0.1.0
-Author: Henry Rodman
-Maintainer: Henry Rodman <henry@silviaterra.com>
+Authors@R: c(
+    person("Rodman", "Henry", , "henry@silviaterra.com", role = c("aut", "cre")),
+    person("SilviaTerra", role = c("cph", "fnd"))
+    )
 Description: Generate interactive preview map of Landsat 8 images.
     Images are downloaded from AWS S3 public repository (s3://landsat-pds/)
     and displayed using the `mapview` package.
