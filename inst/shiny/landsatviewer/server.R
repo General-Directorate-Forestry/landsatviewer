@@ -82,7 +82,7 @@ function(input, output) {
       scene_dat[input$table_rows_selected, ]
 
     },
-    ignore.null = FALSE
+    ignoreNULL = FALSE
   )
   
   # open rasters if that button is clicked
