@@ -75,13 +75,14 @@ function(input, output) {
   #   }
   # })
 
-  map_time <- observeEvent(
+  map_time <- eventReactive(
     input$view_map, {
       scene_dat <- scene_tab()
 
       scene_dat[input$table_rows_selected, ]
 
-    }
+    },
+    ignore.null = FALSE
   )
   
   # open rasters if that button is clicked
