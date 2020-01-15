@@ -199,8 +199,9 @@ get_scene_table <- function() {
 #' @return file path to output file
 
 merge_rasts <- function(out_file, in_files) {
+  gdal_merge.py <- system("which gdal_merge.py", intern = TRUE)
   merge_cmd <- glue::glue(
-    "gdal_merge.py -separate -n 0 -a_nodata 0 -ps 60 60 -co COMPRESS=LZW -o {out_file} {in_files}"
+    "{gdal_merge.py} -separate -n 0 -a_nodata 0 -ps 60 60 -co COMPRESS=LZW -o {out_file} {in_files}"
   )
   system(merge_cmd)
 
