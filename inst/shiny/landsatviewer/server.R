@@ -1,12 +1,15 @@
 library(dplyr)
 
 function(input, output) {
-  all_scenes <- landsatviewer::get_scene_table() %>%
-    mutate(
-      year = lubridate::year(acquisitionDate),
-      month = lubridate::month(acquisitionDate),
-      day = lubridate::day(acquisitionDate)
-    )
+  withProgress(message = "loading scene list", {
+    all_scenes <- landsatviewer::get_scene_table() %>%
+      mutate(
+        year = lubridate::year(acquisitionDate),
+        month = lubridate::month(acquisitionDate),
+        day = lubridate::day(acquisitionDate)
+      )
+  })
+
 
   scene_tab <- eventReactive(
     input$update, {
@@ -84,7 +87,7 @@ function(input, output) {
     },
     ignoreNULL = FALSE
   )
-  
+
   # open rasters if that button is clicked
   observeEvent(
     input$open_rasters, {
@@ -92,10 +95,13 @@ function(input, output) {
 
       scene <- scene_dat[input$table_rows_selected, ]
 
-      landsatviewer::view_landsat(
-        scene = scene,
-        open_rasts = TRUE
-      )
+      withProgress(message = "downloading rasters", {
+        landsatviewer::view_landsat(
+          scene = scene,
+          open_rasts = TRUE
+        )
+      })
+
     }
   )
 
