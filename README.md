@@ -6,6 +6,9 @@ At this time you must install `landsatviewer` via GitHub.
 devtools::install_github("SilviaTerra/landsatviewer")
 ```
 
+To make the composite raster images that can be opened in your system GIS software you must have the system package `gdal` installed on your machine and the path to the gdal functions must be visible to R via `system()` calls.
+This works better when you launch the shiny app from your terminal (not from Rstudio).
+
 ## Usage
 The main function is `view_landsat` which will download and assemble a false color composite image using bands 5, 4, and 3 from the specified landsat scene, a true color composite image using bands 4, 3, and 2, the QA band, and the cirrus band (band 9).
 The rasters can either be opened in your system GIS software (e.g. QGIS) or in an interactive leaflet map.
