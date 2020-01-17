@@ -16,6 +16,10 @@
 view_landsat <- function(p = NULL, r = NULL, date = NULL,
                          scene = NULL, open_rasts = FALSE) {
 
+  if (is.null(scene) | (is.null(p) & is.null(r) & is.null(date))) {
+    stop("you must specifiy either a row from get_scene_table() or a path/row/date combo")
+  }
+
   if (is.null(scene)) {
     all_scenes <- get_scene_table()
 
