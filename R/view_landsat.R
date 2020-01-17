@@ -227,8 +227,10 @@ merge_rasts <- function(out_file, in_files) {
 resample_raster <- function(file, a_nodata, tr) {
   out_file <- stringr::str_replace(file, ".TIF", "_update.TIF")
 
+  gdal_translate <- system("which gdal_translate", intern = TRUE)
+
   cmd <- glue::glue(
-    "gdal_translate -a_nodata {a_nodata} -tr {tr} {tr} {file} {out_file}"
+    "{gdal_translate} -a_nodata {a_nodata} -tr {tr} {tr} {file} {out_file}"
   )
 
   system(cmd)
